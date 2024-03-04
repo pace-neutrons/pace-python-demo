@@ -303,7 +303,7 @@ xgeom = [0,0,1]
 ygeom = [0,1,0]
 shape = 'cuboid'
 shape_pars = [0.01,0.05,0.01]
-wsc = m.set_sample(wsc, m.IX_sample(is_crystal, xgeom, ygeom, shape, shape_pars))
+wsc = m.set_sample(wsc, m.IX_sample(xgeom, ygeom, shape, shape_pars))
 ei = 40; freq = 400; chopper = 'g'
 wsc = m.set_instrument(wsc, m.merlin_instrument(ei, freq, chopper))
 disp2sqwfun = m.eval('@disp2sqw')
