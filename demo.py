@@ -298,7 +298,6 @@ hf = m.plot(wsc); m.pl(wsim)
 # calculation using the `tobyfit` method of Horace
 
 # Calculate spectra with full instrument resolution convolution
-is_crystal = True
 xgeom = [0,0,1]
 ygeom = [0,1,0]
 shape = 'cuboid'
