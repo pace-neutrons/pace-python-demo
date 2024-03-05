@@ -17,13 +17,14 @@
 
 # Then start this notebook. The next cell imports the `pace_python` module
 # and starts the Matlab interpreter which is assigned as to the variable `m`.
-# All calls to Horace/SpinW methods are called as methods of `m`: 
+# All calls to Horace/SpinW methods are called as methods of `m`:
 # you need to prefix such calls with `m.` as shown below.
 
 from pace_neutrons import Matlab
 m = Matlab()
 
-# Usually Matlab plots appear in separate windows, but with Jupyter notebooks it 
+#%%
+# Usually Matlab plots appear in separate windows, but with Jupyter notebooks it
 # is more usual to have them appear as pictures inside the notebook.
 # This behaviour can be changed with a "magic" function, `%pace_python`:
 #
@@ -54,7 +55,7 @@ proj = m.projaxes([1, 0, 0], [0, 1, 0], 'type', 'rrr')
 w1 = m.cut_sqw('datafiles/pcsmo_cut1.sqw', proj, [-1, 0.05, 1], [-1, 0.05, 1], [-10, 10], [10, 20], '-nopix')
 w1.plot()
 m.lz(0, 10)
-
+#%%
 # We can also make a cut within a cut. Note the absence of the `'-nopix'` option,
 # which keeps all the pixels in the cut `w2`, allowing us to cut it again.
 # With the `'-nopix'` option, the output workspace (`w1`) has only the rebinned data,
@@ -110,11 +111,11 @@ def py_fe_sqw(h, k, l, e, p):
     return (ff**2) * (p[4]/np.pi) * (e / (1-np.exp(-11.602*e/p[3]))) * (4 * p[2] * om) / ((e**2 - om**2)**2 + 4*(p[2] * e)**2)
 
 # Starting parameters for fit
-J = 35;     # Exchange interaction in meV
-D = 0;      # Single-ion anisotropy in meV
-gam = 30;   # Intrinsic linewidth in meV (inversely proportional to excitation lifetime)
-temp = 10;  # Sample measurement temperature in Kelvin
-amp = 300;  # Magnitude of the intensity of the excitation (arbitrary units)
+J = 35     # Exchange interaction in meV
+D = 0      # Single-ion anisotropy in meV
+gam = 30   # Intrinsic linewidth in meV (inversely proportional to excitation lifetime)
+temp = 10  # Sample measurement temperature in Kelvin
+amp = 300  # Magnitude of the intensity of the excitation (arbitrary units)
 
 # Evaluate the mode on the cut with the starting parameters
 w_cal = m.sqw_eval(w_fe, py_fe_sqw, [J, D, gam, temp, amp])
@@ -154,7 +155,7 @@ m.plot(w_fe)
 m.pl(wfit['sum'])
 m.pl(wfit['back'])
 
-# We now turn to an example with the `spinw` package to calculate spin waves. 
+# We now turn to an example with the `spinw` package to calculate spin waves.
 # We will reuse the bcc-iron dataset, but instead of a simple dispersion calculated
 # in a Python function, we define a SpinW model for it.
 # While SpinW is more flexible, it is *much* more computationally intensive than the analytic model used before.
@@ -167,9 +168,9 @@ m.pl(wfit['back'])
 # * Matlab functions like `diag` must be preceded by `m.` and array elements needs `,` comma separators.
 # * `.T` is used for transposed in `numpy` instead of the `'` operator.
 
-a = 2.87;
+a = 2.87
 
-fe = m.spinw();
+fe = m.spinw()
 fe.genlattice('lat_const', [a, a, a], 'angled', [90, 90, 90], 'spgr', 'I m -3 m')  # bcc Fe
 fe.addatom('label', 'MFe3', 'r', [0, 0, 0], 'S', 5/2, 'color', 'gold')
 fe.gencoupling()
@@ -193,19 +194,19 @@ m.plot(fe, 'range', [2, 2, 2])
 # Constant parameters for SpinW model
 # Note that we use the damped harmonic oscillator resolution model ('sho')
 cpars = ['mat', ['J1', 'D(3,3)'], 'hermit', False, 'optmem', 1,
-         'useFast', True, 'resfun', 'sho', 'formfact', True];
+         'useFast', True, 'resfun', 'sho', 'formfact', True]
 
 kk = m.multifit_sqw(w_fe)
 kk = kk.set_fun (fe.horace_sqw, [[J, D, gam, temp, amp]]+cpars)
-kk = kk.set_free ([1, 0, 1, 0, 1]);
-kk = kk.set_bfun (linear_bg, [0.1,0]);
-kk = kk.set_bfree ([1,0]);
-kk = kk.set_options ('list',2);
+kk = kk.set_free ([1, 0, 1, 0, 1])
+kk = kk.set_bfun (linear_bg, [0.1,0])
+kk = kk.set_bfree ([1,0])
+kk = kk.set_options ('list',2)
 
 # Time a single iteration
 m.tic()
-wsim = kk.simulate('comp');
-t_spinw_single = m.toc();
+wsim = kk.simulate('comp')
+t_spinw_single = m.toc()
 
 print(f'Time to evaluate a single iteration: {t_spinw_single}s')
 
@@ -217,40 +218,40 @@ m.pl(wsim['fore'])
 
 # Time the fit
 m.tic()
-wfit, fitdata = kk.fit('comp');
-t_spinw = m.toc();
+wfit, fitdata = kk.fit('comp')
+t_spinw = m.toc()
 
 print(f'Time for SpinW fit = {t_spinw}s')
 
-m.acolor('black');
-hf3 = m.plot(w_fe);
-m.acolor('red');
-m.pl(wfit['sum']);
-m.pl(wfit['back']);
+m.acolor('black')
+hf3 = m.plot(w_fe)
+m.acolor('red')
+m.pl(wfit['sum'])
+m.pl(wfit['back'])
 
 # TODO: Print out fitted values and errors
 
 # Run through it again using Brille
 cpars = ['mat', ['J1', 'D(3,3)'], 'hermit', False, 'optmem', 1,
-         'useFast', False, 'resfun', 'sho', 'formfact', True, 'use_brille', True];
+         'useFast', False, 'resfun', 'sho', 'formfact', True, 'use_brille', True]
 
 kk = m.multifit_sqw(w_fe)
 kk = kk.set_fun (fe.horace_sqw, [[J, D, gam, temp, amp]]+cpars)
-kk = kk.set_free ([1, 0, 1, 0, 1]);
-kk = kk.set_bfun (linear_bg, [0.1,0]);
-kk = kk.set_bfree ([1,0]);
-kk = kk.set_options ('list',2);
+kk = kk.set_free ([1, 0, 1, 0, 1])
+kk = kk.set_bfun (linear_bg, [0.1,0])
+kk = kk.set_bfree ([1,0])
+kk = kk.set_options ('list',2)
 
 # Time a single iteration
 m.tic()
-wsim = kk.simulate('comp');
-t_spinw_fill = m.toc();
+wsim = kk.simulate('comp')
+t_spinw_fill = m.toc()
 
 print(f'Time to fill Brille grid: {t_spinw_fill}s')
 
 m.tic()
-wsim = kk.simulate('comp');
-t_spinw_single = m.toc();
+wsim = kk.simulate('comp')
+t_spinw_single = m.toc()
 
 print(f'Time to evaluate a single iteration: {t_spinw_single}s')
 
@@ -291,23 +292,22 @@ wsc = m.cut_sqw('datafiles/quartz_cut.sqw', [-3.02, -2.98], [5, 0.5, 38])
 wsim = m.disp2sqw_eval(wsc, euobj.horace_disp, (scalefac), effective_fwhm)
 
 m.acolor('black')
-hf = m.plot(wsc); m.pl(wsim);
+hf = m.plot(wsc); m.pl(wsim)
 
 # Finally, we can repeat the simulation above but using the full instrument resolution
 # calculation using the `tobyfit` method of Horace
 
 # Calculate spectra with full instrument resolution convolution
-is_crystal = True;
-xgeom = [0,0,1];
-ygeom = [0,1,0];
-shape = 'cuboid';
-shape_pars = [0.01,0.05,0.01];
-wsc = m.set_sample(wsc, m.IX_sample(is_crystal, xgeom, ygeom, shape, shape_pars));
-ei = 40; freq = 400; chopper = 'g';
-wsc = m.set_instrument(wsc, m.merlin_instrument(ei, freq, chopper));
-disp2sqwfun = m.eval('@disp2sqw');
-kk = m.tobyfit(wsc);
-kk = kk.set_fun(disp2sqwfun, [euobj.horace_disp, [scalefac], intrinsic_fwhm]);
+xgeom = [0,0,1]
+ygeom = [0,1,0]
+shape = 'cuboid'
+shape_pars = [0.01,0.05,0.01]
+wsc = m.set_sample(wsc, m.IX_sample(xgeom, ygeom, shape, shape_pars))
+ei = 40; freq = 400; chopper = 'g'
+wsc = m.set_instrument(wsc, m.merlin_instrument(ei, freq, chopper))
+disp2sqwfun = m.eval('@disp2sqw')
+kk = m.tobyfit(wsc)
+kk = kk.set_fun(disp2sqwfun, [euobj.horace_disp, [scalefac], intrinsic_fwhm])
 wtoby = kk.simulate()
 
-hf = m.plot(wsc); m.pl(wsim); m.acolor('red'); m.pl(wtoby);
+hf = m.plot(wsc); m.pl(wsim); m.acolor('red'); m.pl(wtoby)
